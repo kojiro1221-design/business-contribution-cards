@@ -7,6 +7,7 @@ import { CARDS, getCategoryById, getRandomCard } from '@/data/cards'
 import type { Card } from '@/types'
 import Timer from '@/components/Timer'
 import SupportCards from '@/components/SupportCards'
+import CardFace from '@/components/CardFace'
 
 function DialogContent() {
   const params = useSearchParams()
@@ -16,22 +17,24 @@ function DialogContent() {
 
   const [card, setCard] = useState<Card | null>(null)
   const [history, setHistory] = useState<Card[]>([])
+  const [animating, setAnimating] = useState(false)
 
   useEffect(() => {
     if (mode === 'random') {
-      const c = getRandomCard()
-      setCard(c)
+      setCard(getRandomCard())
     } else if (cardId) {
-      const c = CARDS.find((c) => c.id === cardId) ?? null
-      setCard(c)
+      setCard(CARDS.find((c) => c.id === cardId) ?? null)
     }
   }, [cardId, mode])
 
   function drawNext() {
-    if (card) setHistory((h) => [...h, card])
-    const next = getRandomCard()
-    setCard(next)
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    setAnimating(true)
+    setTimeout(() => {
+      if (card) setHistory((h) => [...h, card])
+      setCard(getRandomCard())
+      setAnimating(false)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 200)
   }
 
   if (!card) {
@@ -42,54 +45,31 @@ function DialogContent() {
     )
   }
 
-  const category = getCategoryById(card.categoryId)
-
   return (
     <main className="min-h-screen px-4 py-8">
-      <div className="max-w-lg mx-auto space-y-5">
+      <div className="max-w-lg mx-auto space-y-6">
         {/* ヘッダー */}
         <div className="flex items-center gap-3">
           <Link href="/cards" className="text-amber-600 hover:text-amber-800 text-2xl leading-none">←</Link>
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl font-bold text-gray-900">対話カード</h1>
             {history.length > 0 && (
-              <p className="text-xs text-gray-400">{history.length}枚目を使用中</p>
+              <p className="text-xs text-gray-400">{history.length + 1}枚目</p>
             )}
           </div>
-          <Link
-            href="/memo"
-            className="ml-auto text-sm text-amber-700 hover:text-amber-900 underline underline-offset-2"
-          >
+          <Link href="/memo" className="text-sm text-amber-700 hover:text-amber-900 underline underline-offset-2">
             メモへ 📝
           </Link>
         </div>
 
-        {/* カテゴリバッジ */}
-        {category && (
-          <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-semibold ${category.bgColor} ${category.color} border ${category.borderColor}`}>
-            <span>{category.emoji}</span>
-            <span>{category.name}</span>
-          </div>
-        )}
-
-        {/* メインカード */}
-        {category && (
-          <div className={`card-base ${category.bgColor} ${category.borderColor} p-8 text-center space-y-4 min-h-[220px] flex flex-col justify-center`}>
-            <p className={`text-2xl font-bold leading-relaxed ${category.color}`}>
-              {card.question}
-            </p>
-            {card.hint && (
-              <p className="text-sm text-gray-500 mt-2">{card.hint}</p>
-            )}
-          </div>
-        )}
+        {/* カード */}
+        <div className={`transition-all duration-200 ${animating ? 'opacity-0 scale-95 -translate-y-2' : 'opacity-100 scale-100 translate-y-0'}`}>
+          <CardFace card={card} index={history.length + 1} />
+        </div>
 
         {/* アクションボタン */}
-        <div className="flex gap-3">
-          <button
-            onClick={drawNext}
-            className="btn-primary flex-1"
-          >
+        <div className="flex gap-3 pt-2">
+          <button onClick={drawNext} className="btn-primary flex-1">
             🎲 次のカードを引く
           </button>
           <Link href="/cards" className="btn-secondary px-4">
@@ -105,19 +85,21 @@ function DialogContent() {
 
         {/* 履歴 */}
         {history.length > 0 && (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="text-sm font-bold text-gray-500">使ったカード</p>
-            {history.map((h, i) => {
-              const hCat = getCategoryById(h.categoryId)
-              return (
-                <div key={i} className="bg-white rounded-xl border border-gray-200 px-4 py-3">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-xs text-gray-400">{hCat?.emoji} {hCat?.name}</span>
+            <div className="space-y-2">
+              {history.map((h, i) => {
+                const hCat = getCategoryById(h.categoryId)
+                return (
+                  <div key={i} className="bg-white rounded-xl border border-gray-200 px-4 py-3 opacity-60">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-xs text-gray-400">{hCat?.emoji} {hCat?.name}</span>
+                    </div>
+                    <p className="text-sm text-gray-600">{h.question}</p>
                   </div>
-                  <p className="text-sm text-gray-600">{h.question}</p>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
         )}
 

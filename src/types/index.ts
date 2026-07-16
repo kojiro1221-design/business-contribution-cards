@@ -15,11 +15,14 @@ export interface Category {
   borderColor: string
 }
 
+export type Direction = 'ask' | 'self' | 'both'
+
 export interface Card {
   id: string
   categoryId: CategoryId
   question: string
   hint?: string
+  direction: Direction
 }
 
 export interface Memo {
