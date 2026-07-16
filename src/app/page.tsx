@@ -29,9 +29,17 @@ export default function TopPage() {
 
         {/* メインボタン */}
         <div className="space-y-3">
-          <Link href="/cards" className="btn-primary block w-full text-center text-lg">
+          {/* タイマー設定つきで始める（メイン） */}
+          <Link href="/timer-setup" className="btn-primary block w-full text-center text-lg">
+            ⏱ タイマーを設定して始める
+          </Link>
+
+          {/* カード選択 */}
+          <Link href="/cards" className="btn-secondary block w-full text-center">
             カードを選んで始める
           </Link>
+
+          {/* ランダム */}
           <Link href="/dialog?mode=random" className="btn-secondary block w-full text-center">
             ランダムに1枚引く 🎲
           </Link>

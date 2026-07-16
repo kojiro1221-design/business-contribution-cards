@@ -1,31 +1,32 @@
 'use client'
 
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { CARDS, getCategoryById, getRandomCard } from '@/data/cards'
 import type { Card } from '@/types'
 import Timer from '@/components/Timer'
+import SessionTimer from '@/components/SessionTimer'
 import SupportCards from '@/components/SupportCards'
 import CardFace from '@/components/CardFace'
 
 function DialogContent() {
   const params = useSearchParams()
-  const router = useRouter()
   const cardId = params.get('cardId')
   const mode = params.get('mode')
+  const useSessionTimer = params.get('timer') === '1'
 
   const [card, setCard] = useState<Card | null>(null)
   const [history, setHistory] = useState<Card[]>([])
   const [animating, setAnimating] = useState(false)
 
   useEffect(() => {
-    if (mode === 'random') {
+    if (mode === 'random' || useSessionTimer) {
       setCard(getRandomCard())
     } else if (cardId) {
       setCard(CARDS.find((c) => c.id === cardId) ?? null)
     }
-  }, [cardId, mode])
+  }, [cardId, mode, useSessionTimer])
 
   function drawNext() {
     setAnimating(true)
@@ -77,8 +78,8 @@ function DialogContent() {
           </Link>
         </div>
 
-        {/* タイマー */}
-        <Timer />
+        {/* タイマー（セッションタイマー or 通常タイマー） */}
+        {useSessionTimer ? <SessionTimer /> : <Timer />}
 
         {/* サポートカード */}
         <SupportCards />
