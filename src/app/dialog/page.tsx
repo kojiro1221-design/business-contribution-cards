@@ -3,7 +3,7 @@
 import { useSearchParams } from 'next/navigation'
 import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { CARDS, getCategoryById, getRandomCard } from '@/data/cards'
+import { CARDS, CATEGORIES, getCategoryById, getRandomCard } from '@/data/cards'
 import type { Card } from '@/types'
 import Timer from '@/components/Timer'
 import SessionTimer from '@/components/SessionTimer'
@@ -14,24 +14,33 @@ function DialogContent() {
   const params = useSearchParams()
   const cardId = params.get('cardId')
   const mode = params.get('mode')
+  const catParam = params.get('cat')         // 元のカテゴリID
   const useSessionTimer = params.get('timer') === '1'
 
   const [card, setCard] = useState<Card | null>(null)
-  const [history, setHistory] = useState<Card[]>([])
+  const [randomHistory, setRandomHistory] = useState<Card[]>([])
   const [animating, setAnimating] = useState(false)
 
+  const isRandom = mode === 'random'
+
+  // 元カテゴリの次カテゴリを求める
+  const currentCatIndex = catParam ? CATEGORIES.findIndex((c) => c.id === catParam) : -1
+  const nextCategory = currentCatIndex >= 0 && currentCatIndex < CATEGORIES.length - 1
+    ? CATEGORIES[currentCatIndex + 1]
+    : null
+
   useEffect(() => {
-    if (mode === 'random' || useSessionTimer) {
+    if (isRandom || useSessionTimer) {
       setCard(getRandomCard())
     } else if (cardId) {
       setCard(CARDS.find((c) => c.id === cardId) ?? null)
     }
-  }, [cardId, mode, useSessionTimer])
+  }, [cardId, isRandom, useSessionTimer])
 
-  function drawNext() {
+  function drawNextRandom() {
     setAnimating(true)
     setTimeout(() => {
-      if (card) setHistory((h) => [...h, card])
+      if (card) setRandomHistory((h) => [...h, card])
       setCard(getRandomCard())
       setAnimating(false)
       window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -46,16 +55,19 @@ function DialogContent() {
     )
   }
 
+  const backUrl = catParam ? `/cards?cat=${catParam}` : '/cards'
+
   return (
     <main className="min-h-screen px-4 py-8">
       <div className="max-w-lg mx-auto space-y-6">
+
         {/* ヘッダー */}
         <div className="flex items-center gap-3">
-          <Link href="/cards" className="text-amber-600 hover:text-amber-800 text-2xl leading-none">←</Link>
+          <Link href={backUrl} className="text-amber-600 hover:text-amber-800 text-2xl leading-none">←</Link>
           <div className="flex-1">
             <h1 className="text-xl font-bold text-gray-900">対話カード</h1>
-            {history.length > 0 && (
-              <p className="text-xs text-gray-400">{history.length + 1}枚目</p>
+            {isRandom && randomHistory.length > 0 && (
+              <p className="text-xs text-gray-400">{randomHistory.length + 1}枚目</p>
             )}
           </div>
           <Link href="/memo" className="text-sm text-amber-700 hover:text-amber-900 underline underline-offset-2">
@@ -65,37 +77,61 @@ function DialogContent() {
 
         {/* カード */}
         <div className={`transition-all duration-200 ${animating ? 'opacity-0 scale-95 -translate-y-2' : 'opacity-100 scale-100 translate-y-0'}`}>
-          <CardFace card={card} index={history.length + 1} />
+          <CardFace card={card} index={isRandom ? randomHistory.length + 1 : undefined} />
         </div>
 
         {/* アクションボタン */}
-        <div className="flex gap-3 pt-2">
-          <button onClick={drawNext} className="btn-primary flex-1">
-            🎲 次のカードを引く
-          </button>
-          <Link href="/cards" className="btn-secondary px-4">
-            選び直す
-          </Link>
-        </div>
+        {isRandom ? (
+          /* ランダムモード：次を引く */
+          <div className="flex gap-3 pt-2">
+            <button onClick={drawNextRandom} className="btn-primary flex-1">
+              🎲 次のカードを引く
+            </button>
+            <Link href="/cards" className="btn-secondary px-4">
+              カテゴリ選択へ
+            </Link>
+          </div>
+        ) : (
+          /* カテゴリモード：カード一覧に戻る or 次カテゴリへ */
+          <div className="space-y-2 pt-2">
+            <Link href={backUrl} className="btn-primary flex items-center justify-center gap-2 w-full">
+              ← このカテゴリの他のカードを見る
+            </Link>
+            {nextCategory && (
+              <Link
+                href={`/cards?cat=${nextCategory.id}`}
+                className="btn-secondary flex items-center justify-center gap-2 w-full"
+              >
+                次のカテゴリへ
+                <span>{nextCategory.emoji}</span>
+                <span className="text-sm">{nextCategory.name}</span>
+                →
+              </Link>
+            )}
+            {!nextCategory && catParam && (
+              <Link href="/memo" className="btn-secondary flex items-center justify-center gap-2 w-full">
+                🎉 すべて完了！貢献メモを書く
+              </Link>
+            )}
+          </div>
+        )}
 
-        {/* タイマー（セッションタイマー or 通常タイマー） */}
+        {/* タイマー */}
         {useSessionTimer ? <SessionTimer /> : <Timer />}
 
         {/* サポートカード */}
         <SupportCards />
 
-        {/* 履歴 */}
-        {history.length > 0 && (
+        {/* ランダムモードの履歴 */}
+        {isRandom && randomHistory.length > 0 && (
           <div className="space-y-3">
             <p className="text-sm font-bold text-gray-500">使ったカード</p>
             <div className="space-y-2">
-              {history.map((h, i) => {
+              {randomHistory.map((h, i) => {
                 const hCat = getCategoryById(h.categoryId)
                 return (
                   <div key={i} className="bg-white rounded-xl border border-gray-200 px-4 py-3 opacity-60">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-xs text-gray-400">{hCat?.emoji} {hCat?.name}</span>
-                    </div>
+                    <p className="text-xs text-gray-400 mb-0.5">{hCat?.emoji} {hCat?.name}</p>
                     <p className="text-sm text-gray-600">{h.question}</p>
                   </div>
                 )
@@ -111,6 +147,7 @@ function DialogContent() {
             貢献メモを書く 📝
           </Link>
         </div>
+
       </div>
     </main>
   )
