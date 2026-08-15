@@ -4,6 +4,7 @@ export default function TopPage() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
       <div className="max-w-md w-full text-center space-y-8">
+
         {/* ロゴ・タイトル */}
         <div className="space-y-3">
           <div className="text-6xl">🃏</div>
@@ -29,19 +30,11 @@ export default function TopPage() {
 
         {/* メインボタン */}
         <div className="space-y-3">
-          {/* タイマー設定つきで始める（メイン） */}
-          <Link href="/timer-setup" className="btn-primary block w-full text-center text-lg">
-            ⏱ タイマーを設定して始める
+          <Link href="/session-start" className="btn-primary block w-full text-center text-lg">
+            ▶ セッションを始める
           </Link>
-
-          {/* カード選択 */}
-          <Link href="/cards" className="btn-secondary block w-full text-center">
-            カードを選んで始める
-          </Link>
-
-          {/* ランダム */}
           <Link href="/dialog?mode=random" className="btn-secondary block w-full text-center">
-            ランダムに1枚引く 🎲
+            🎲 ランダムに1枚引く
           </Link>
         </div>
 
@@ -54,6 +47,7 @@ export default function TopPage() {
             使い方 ❓
           </Link>
         </div>
+
       </div>
     </main>
   )

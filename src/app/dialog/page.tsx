@@ -5,8 +5,6 @@ import { Suspense, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { CARDS, CATEGORIES, getCategoryById, getRandomCard } from '@/data/cards'
 import type { Card } from '@/types'
-import Timer from '@/components/Timer'
-import SessionTimer from '@/components/SessionTimer'
 import SupportCards from '@/components/SupportCards'
 import CardFace from '@/components/CardFace'
 
@@ -14,8 +12,7 @@ function DialogContent() {
   const params = useSearchParams()
   const cardId = params.get('cardId')
   const mode = params.get('mode')
-  const catParam = params.get('cat')         // 元のカテゴリID
-  const useSessionTimer = params.get('timer') === '1'
+  const catParam = params.get('cat')
 
   const [card, setCard] = useState<Card | null>(null)
   const [randomHistory, setRandomHistory] = useState<Card[]>([])
@@ -23,19 +20,18 @@ function DialogContent() {
 
   const isRandom = mode === 'random'
 
-  // 元カテゴリの次カテゴリを求める
   const currentCatIndex = catParam ? CATEGORIES.findIndex((c) => c.id === catParam) : -1
   const nextCategory = currentCatIndex >= 0 && currentCatIndex < CATEGORIES.length - 1
     ? CATEGORIES[currentCatIndex + 1]
     : null
 
   useEffect(() => {
-    if (isRandom || useSessionTimer) {
+    if (isRandom) {
       setCard(getRandomCard())
     } else if (cardId) {
       setCard(CARDS.find((c) => c.id === cardId) ?? null)
     }
-  }, [cardId, isRandom, useSessionTimer])
+  }, [cardId, isRandom])
 
   function drawNextRandom() {
     setAnimating(true)
@@ -82,7 +78,6 @@ function DialogContent() {
 
         {/* アクションボタン */}
         {isRandom ? (
-          /* ランダムモード：次を引く */
           <div className="flex gap-3 pt-2">
             <button onClick={drawNextRandom} className="btn-primary flex-1">
               🎲 次のカードを引く
@@ -92,20 +87,13 @@ function DialogContent() {
             </Link>
           </div>
         ) : (
-          /* カテゴリモード：カード一覧に戻る or 次カテゴリへ */
           <div className="space-y-2 pt-2">
             <Link href={backUrl} className="btn-primary flex items-center justify-center gap-2 w-full">
               ← このカテゴリの他のカードを見る
             </Link>
             {nextCategory && (
-              <Link
-                href={`/cards?cat=${nextCategory.id}`}
-                className="btn-secondary flex items-center justify-center gap-2 w-full"
-              >
-                次のカテゴリへ
-                <span>{nextCategory.emoji}</span>
-                <span className="text-sm">{nextCategory.name}</span>
-                →
+              <Link href={`/cards?cat=${nextCategory.id}`} className="btn-secondary flex items-center justify-center gap-2 w-full">
+                次のカテゴリへ <span>{nextCategory.emoji}</span><span className="text-sm">{nextCategory.name}</span> →
               </Link>
             )}
             {!nextCategory && catParam && (
@@ -115,9 +103,6 @@ function DialogContent() {
             )}
           </div>
         )}
-
-        {/* タイマー */}
-        {useSessionTimer ? <SessionTimer /> : <Timer />}
 
         {/* サポートカード */}
         <SupportCards />
@@ -142,9 +127,9 @@ function DialogContent() {
 
         {/* メモへ誘導 */}
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 text-center space-y-2">
-          <p className="text-sm text-amber-800">対話が終わったら貢献メモを書きましょう</p>
+          <p className="text-sm text-amber-800">気づきはメモに追記しましょう</p>
           <Link href="/memo" className="btn-primary inline-block px-6 py-2 text-sm">
-            貢献メモを書く 📝
+            メモを開く 📝
           </Link>
         </div>
 
