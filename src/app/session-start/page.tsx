@@ -23,7 +23,7 @@ export default function SessionStartPage() {
       business: business.trim(),
       purpose: purpose.trim(),
       items: [] as string[],
-      nextAction: '',
+      nextActions: [] as string[],
     }
     localStorage.setItem('bcc_active_session', JSON.stringify(session))
     router.push('/cards')

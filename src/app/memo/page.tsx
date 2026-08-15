@@ -14,7 +14,7 @@ interface ActiveSession {
   business: string
   purpose: string
   items: string[]
-  nextAction: string
+  nextActions: string[]
 }
 
 function loadMemos(): Memo[] {
@@ -34,15 +34,20 @@ export default function MemoPage() {
   const [session, setSession] = useState<ActiveSession | null>(null)
   const [memos, setMemos] = useState<Memo[]>([])
   const [newItem, setNewItem] = useState('')
-  const [nextAction, setNextAction] = useState('')
+  const [newNextAction, setNewNextAction] = useState('')
   const [copied, setCopied] = useState<string | null>(null)
   const [showPast, setShowPast] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const nextActionRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const s = loadSession()
+    // 旧フォーマット（nextAction: string）からの移行
+    if (s && !Array.isArray((s as ActiveSession & { nextAction?: string }).nextActions)) {
+      const legacy = s as ActiveSession & { nextAction?: string }
+      s.nextActions = legacy.nextAction ? [legacy.nextAction] : []
+    }
     setSession(s)
-    if (s) setNextAction(s.nextAction)
     setMemos(loadMemos())
   }, [])
 
@@ -62,13 +67,19 @@ export default function MemoPage() {
 
   function deleteItem(index: number) {
     if (!session) return
-    const items = session.items.filter((_, i) => i !== index)
-    updateSession({ ...session, items })
+    updateSession({ ...session, items: session.items.filter((_, i) => i !== index) })
   }
 
-  function handleNextActionChange(val: string) {
-    setNextAction(val)
-    if (session) updateSession({ ...session, nextAction: val })
+  function addNextAction() {
+    if (!session || !newNextAction.trim()) return
+    updateSession({ ...session, nextActions: [...session.nextActions, newNextAction.trim()] })
+    setNewNextAction('')
+    nextActionRef.current?.focus()
+  }
+
+  function deleteNextAction(index: number) {
+    if (!session) return
+    updateSession({ ...session, nextActions: session.nextActions.filter((_, i) => i !== index) })
   }
 
   function endSession() {
@@ -78,14 +89,13 @@ export default function MemoPage() {
       date: session.date,
       partnerName: session.partnerName,
       contributions: session.items.join('\n'),
-      nextAction: session.nextAction,
+      nextAction: session.nextActions.join('\n'),
     }
     const updated = [memo, ...loadMemos()]
     saveMemos(updated)
     setMemos(updated)
     clearSession()
     setSession(null)
-    setNextAction('')
   }
 
   function copyMemo(memo: Memo) {
@@ -183,15 +193,46 @@ export default function MemoPage() {
           </div>
 
           {/* 次のアクション */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-3">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 space-y-4">
             <p className="font-bold text-gray-800">🚀 次のアクション</p>
-            <textarea
-              value={nextAction}
-              onChange={(e) => handleNextActionChange(e.target.value)}
-              placeholder="例：今週中に〇〇さんにLINEで連絡する"
-              rows={3}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 resize-none"
-            />
+
+            {session.nextActions.length > 0 && (
+              <ul className="space-y-2">
+                {session.nextActions.map((item, i) => (
+                  <li key={i} className="flex items-start gap-2 group">
+                    <span className="text-amber-500 mt-0.5 shrink-0">•</span>
+                    <span className="text-sm text-gray-800 flex-1 leading-relaxed">{item}</span>
+                    <button
+                      onClick={() => deleteNextAction(i)}
+                      className="text-gray-300 hover:text-red-400 transition-colors shrink-0 opacity-0 group-hover:opacity-100 text-xs"
+                    >✕</button>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {session.nextActions.length === 0 && (
+              <p className="text-sm text-gray-400 text-center py-2">次に取るアクションを追加しましょう</p>
+            )}
+
+            <div className="flex gap-2">
+              <input
+                ref={nextActionRef}
+                type="text"
+                value={newNextAction}
+                onChange={(e) => setNewNextAction(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addNextAction() } }}
+                placeholder="例：今週中に〇〇さんにLINEで連絡する"
+                className="flex-1 border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+              />
+              <button
+                onClick={addNextAction}
+                disabled={!newNextAction.trim()}
+                className="px-4 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-bold hover:bg-amber-600 disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors shrink-0"
+              >
+                + 追加
+              </button>
+            </div>
           </div>
 
           {/* セッション終了ボタン */}
