@@ -95,7 +95,7 @@ export const CARDS: Card[] = [
   // 求めるつながりを知る（すべて「相手に聞く」）
   { id: 'n1', categoryId: 'know-connections', direction: 'ask', question: 'どんな方と出会いたいですか？', hint: '業種・役割・人柄など具体的に聞きましょう' },
   { id: 'n2', categoryId: 'know-connections', direction: 'ask', question: '今、求めているご縁やつながりは何ですか？', hint: '協業・紹介・情報など幅広く聞きましょう' },
-  { id: 'n3', categoryId: 'know-connections', direction: 'ask', question: 'ご紹介できる方のイメージを教えてください', hint: '具体的な人物像を引き出しましょう' },
+  { id: 'n3', categoryId: 'know-connections', direction: 'ask', question: '今取り組んでいることが、さらにうまくいくには、どんなサポートがあるとよさそうですか？', hint: '人の紹介・情報・相談相手・協力など、自由に考えてもらいましょう' },
   { id: 'n4', categoryId: 'know-connections', direction: 'ask', question: 'コラボや連携できそうな業種や分野は？', hint: '異業種の可能性も一緒に考えましょう' },
   { id: 'n5', categoryId: 'know-connections', direction: 'ask', question: '一緒にやってみたいこと・試してみたいことは？', hint: 'ゆるやかな可能性として聞いてみましょう' },
   { id: 'n6', categoryId: 'know-connections', direction: 'ask', question: '逆に、あなたがご紹介できそうな方はいますか？', hint: 'Give & Giveの精神で話しましょう' },
