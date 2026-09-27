@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import PasswordGate from '@/components/PasswordGate'
+import MemoSheet from '@/components/MemoSheet'
 
 export const metadata: Metadata = {
   title: 'Business Contribution Cards',
@@ -11,7 +12,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ja">
       <body className="min-h-screen">
-        <PasswordGate>{children}</PasswordGate>
+        <PasswordGate>
+          {children}
+          <MemoSheet />
+        </PasswordGate>
       </body>
     </html>
   )
