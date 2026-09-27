@@ -66,7 +66,7 @@ function DialogContent() {
               <p className="text-xs text-gray-400">{randomHistory.length + 1}枚目</p>
             )}
           </div>
-          <Link href="/memo" className="text-sm text-amber-700 hover:text-amber-900 underline underline-offset-2">
+          <Link href="/memo" target="_blank" rel="noopener noreferrer" className="text-sm text-amber-700 hover:text-amber-900 underline underline-offset-2">
             メモへ 📝
           </Link>
         </div>
@@ -97,7 +97,7 @@ function DialogContent() {
               </Link>
             )}
             {!nextCategory && catParam && (
-              <Link href="/memo" className="btn-secondary flex items-center justify-center gap-2 w-full">
+              <Link href="/memo" target="_blank" rel="noopener noreferrer" className="btn-secondary flex items-center justify-center gap-2 w-full">
                 🎉 すべて完了！貢献メモを書く
               </Link>
             )}
@@ -128,7 +128,7 @@ function DialogContent() {
         {/* メモへ誘導 */}
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-5 py-4 text-center space-y-2">
           <p className="text-sm text-amber-800">気づきはメモに追記しましょう</p>
-          <Link href="/memo" className="btn-primary inline-block px-6 py-2 text-sm">
+          <Link href="/memo" target="_blank" rel="noopener noreferrer" className="btn-primary inline-block px-6 py-2 text-sm">
             メモを開く 📝
           </Link>
         </div>
