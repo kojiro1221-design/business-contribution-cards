@@ -40,7 +40,7 @@ export default function TopPage() {
 
         {/* サブリンク */}
         <div className="flex justify-center gap-6 text-sm">
-          <Link href="/memo" target="_blank" rel="noopener noreferrer" className="text-amber-700 hover:text-amber-900 underline underline-offset-2">
+          <Link href="/memo" className="text-amber-700 hover:text-amber-900 underline underline-offset-2">
             貢献メモ 📝
           </Link>
           <Link href="/howto" className="text-amber-700 hover:text-amber-900 underline underline-offset-2">

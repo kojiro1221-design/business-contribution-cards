@@ -162,7 +162,7 @@ function CardsContent() {
                 <span>→</span>
               </button>
             ) : (
-              <Link href="/memo" target="_blank" rel="noopener noreferrer" className="btn-primary block w-full text-center">
+              <Link href="/memo" className="btn-primary block w-full text-center">
                 🎉 すべてのカテゴリ完了！貢献メモを書く
               </Link>
             )}
